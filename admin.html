@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MineHub — Mod qo'shish</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --radius-lg:24px; --radius-md:16px; --radius-full:999px;
+    --accent:#4F8A5B; --accent-hover:#5FA36C;
+    --transition:0.35s cubic-bezier(.4,0,.2,1);
+  }
+  [data-theme="dark"]{
+    --bg:#302F2C; --surface:#3B3A36; --surface-2:#454440;
+    --text:#F2F0E8; --text-muted:#B0ADA4; --border:#4A4944;
+  }
+  [data-theme="light"]{
+    --bg:#EFEDE3; --surface:#FFFFFF; --surface-2:#F7F5EC;
+    --text:#2B2A27; --text-muted:#7A776E; --border:#E2DFD3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Manrope',sans-serif; background:var(--bg); color:var(--text);
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+    transition: background var(--transition), color var(--transition);
+  }
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+    padding:32px; max-width:440px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,0.15);
+  }
+  h1{ font-size:24px; font-weight:800; margin:0 0 6px; letter-spacing:-0.02em; }
+  p.sub{ color:var(--text-muted); font-size:14px; margin:0 0 24px; }
+  p.hint{ color:var(--text-muted); font-size:12px; margin:-12px 0 16px; line-height:1.5; }
+  label{ font-size:13px; font-weight:700; margin-bottom:6px; display:block; }
+  input, textarea, select{
+    width:100%; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-md);
+    padding:12px 16px; font-family:inherit; font-size:14px; color:var(--text); outline:none; margin-bottom:16px; resize:none;
+  }
+  button{
+    width:100%; background:var(--accent); color:#fff; border:none; border-radius:var(--radius-full);
+    padding:14px; font-weight:700; font-size:15px; cursor:pointer; font-family:inherit;
+    transition: background var(--transition);
+  }
+  button:hover{ background:var(--accent-hover); }
+  button:disabled{ opacity:0.5; cursor:not-allowed; }
+  .status{ margin-top:14px; font-size:13px; text-align:center; color:var(--text-muted); }
+  .status.error{ color:#C1554A; }
+  .status.ok{ color:var(--accent); }
+  .hidden{ display:none; }
+</style>
+</head>
+<body data-theme="dark">
+
+<div class="card" id="loginCard">
+  <h1>Admin kirish</h1>
+  <p class="sub">Mod qo'shish uchun parolni kiriting.</p>
+  <label>Parol</label>
+  <input type="password" id="passInput" placeholder="Parol">
+  <button id="loginBtn">Kirish</button>
+  <div class="status error" id="loginStatus"></div>
+</div>
+
+<div class="card hidden" id="formCard">
+  <h1>Yangi mod qo'shish</h1>
+  <p class="sub">Ma'lumotlarni to'ldiring. Rasmni to'g'ridan-to'g'ri telefondan yuklashingiz mumkin.</p>
+
+  <label>Nomi</label>
+  <input type="text" id="title" placeholder="Masalan: Wild Biomes Mod">
+
+  <label>Tavsif</label>
+  <textarea id="description" rows="4" placeholder="Mod haqida qisqacha ma'lumot..."></textarea>
+
+  <label>Kategoriya</label>
+  <select id="category">
+    <option value="mods">Modlar</option>
+    <option value="textures">Teksturalar</option>
+    <option value="shaders">Shayderlar</option>
+    <option value="maps">Xaritalar</option>
+  </select>
+
+  <label>Rasmlar (1–15 ta)</label>
+  <input type="file" id="imageFiles" accept="image/*" multiple>
+  <p class="hint" id="imagePreviewHint">Telefondan to'g'ridan-to'g'ri tanlang, havola kerak emas. Ko'pi bilan 15 ta rasm.</p>
+  <div id="imagePreview" style="display:flex; gap:8px; flex-wrap:wrap; margin:-8px 0 16px;"></div>
+
+  <label>Fayl havolasi (URL)</label>
+  <input type="text" id="fileUrl" placeholder="https://github.com/.../releases/download/...">
+  <p class="hint">GitHub Release'ga yuklagan .jar / .zip / .mcpack / .mcworld faylining havolasi.</p>
+
+  <button id="submitBtn">Saqlash</button>
+  <div class="status" id="formStatus"></div>
+</div>
+
+<!-- ==================== FIREBASE ====================
+  index.html dagi bilan bir xil config'ni bu yerga ham qo'ying.
+  Storage endi kerak emas — Firestore yetarli.
+  Parolni pastda ADMIN_PASSWORD qatorida o'zgartiring.
+============================================================ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const ADMIN_PASSWORD = "minehub2026"; // <-- shu yerda parolni o'zgartiring
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD2spvoZNufw1o64Yy5Iw0oeaTp3WnAwe0",
+  authDomain: "minehub-85c19.firebaseapp.com",
+  projectId: "minehub-85c19",
+  storageBucket: "minehub-85c19.firebasestorage.app",
+  messagingSenderId: "479010150876",
+  appId: "1:479010150876:web:56baae2ecb2e07c106d719"
+};
+
+let db;
+try{
+  const app = initializeApp(firebaseConfig);
+  db = getFirestore(app);
+}catch(e){ console.warn("Firebase ulanmadi:", e); }
+
+document.getElementById("loginBtn").addEventListener("click", ()=>{
+  const val = document.getElementById("passInput").value;
+  if(val === ADMIN_PASSWORD){
+    document.getElementById("loginCard").classList.add("hidden");
+    document.getElementById("formCard").classList.remove("hidden");
+  }else{
+    document.getElementById("loginStatus").textContent = "Parol noto'g'ri.";
+  }
+});
+
+const MAX_IMAGES = 15;
+let selectedImages = []; // array of base64 data URLs
+
+function resizeAndCompress(file, maxWidth = 480, quality = 0.45){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = ()=>{
+        let w = img.width, h = img.height;
+        if(w > maxWidth){ h = Math.round(h * (maxWidth / w)); w = maxWidth; }
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderImagePreview(){
+  const wrap = document.getElementById("imagePreview");
+  wrap.innerHTML = "";
+  selectedImages.forEach((src, i)=>{
+    const box = document.createElement("div");
+    box.style.position = "relative";
+    box.style.width = "64px"; box.style.height = "64px";
+    box.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;border:1px solid var(--border);">
+      <button data-i="${i}" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#C1554A;color:#fff;border:none;font-size:12px;line-height:1;cursor:pointer;">×</button>`;
+    box.querySelector("button").addEventListener("click", ()=>{
+      selectedImages.splice(i,1);
+      renderImagePreview();
+    });
+    wrap.appendChild(box);
+  });
+  document.getElementById("imagePreviewHint").textContent =
+    selectedImages.length > 0
+      ? `${selectedImages.length} / ${MAX_IMAGES} rasm tanlandi.`
+      : "Telefondan to'g'ridan-to'g'ri tanlang, havola kerak emas. Ko'pi bilan 15 ta rasm.";
+}
+
+document.getElementById("imageFiles").addEventListener("change", async (e)=>{
+  const files = Array.from(e.target.files || []);
+  const room = MAX_IMAGES - selectedImages.length;
+  const toProcess = files.slice(0, room);
+  document.getElementById("imagePreviewHint").textContent = "Rasmlar qayta ishlanmoqda...";
+  for(const f of toProcess){
+    try{
+      const dataUrl = await resizeAndCompress(f);
+      selectedImages.push(dataUrl);
+    }catch(err){ console.warn("Rasm o'qilmadi:", err); }
+  }
+  e.target.value = "";
+  renderImagePreview();
+});
+
+document.getElementById("submitBtn").addEventListener("click", async ()=>{
+  const title = document.getElementById("title").value.trim();
+  const description = document.getElementById("description").value.trim();
+  const category = document.getElementById("category").value;
+  const fileUrl = document.getElementById("fileUrl").value.trim();
+  const statusEl = document.getElementById("formStatus");
+  const submitBtn = document.getElementById("submitBtn");
+
+  if(!title || !description || !fileUrl){
+    statusEl.className = "status error";
+    statusEl.textContent = "Nomi, tavsif va fayl havolasini to'ldiring.";
+    return;
+  }
+  if(!db){
+    statusEl.className = "status error";
+    statusEl.textContent = "Firebase ulanmagan. index.html va admin.html dagi config'ni tekshiring.";
+    return;
+  }
+
+  submitBtn.disabled = true;
+  statusEl.className = "status";
+  statusEl.textContent = "Saqlanmoqda...";
+
+  try{
+    await addDoc(collection(db,"mods"), {
+      title, description, category, fileUrl,
+      images: selectedImages,
+      imageUrl: selectedImages[0] || "",
+      ratingSum: 0, ratingCount: 0, createdAt: serverTimestamp()
+    });
+
+    statusEl.className = "status ok";
+    statusEl.textContent = "Muvaffaqiyatli qo'shildi!";
+    document.getElementById("title").value = "";
+    document.getElementById("description").value = "";
+    document.getElementById("fileUrl").value = "";
+    selectedImages = [];
+    renderImagePreview();
+  }catch(e){
+    console.error(e);
+    statusEl.className = "status error";
+    statusEl.textContent = "Xatolik: " + e.message;
+  }finally{
+    submitBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
