@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MineHub — Minecraft modlari</title>
+<title>MineHub — Моды для Minecraft</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
@@ -256,39 +256,39 @@
 <nav class="nav">
   <div class="logo">Mine<span>Hub</span></div>
   <div class="nav-actions">
-    <button class="theme-toggle" id="themeToggle" aria-label="Rejimni almashtirish"><span class="dot"></span></button>
-    <button class="burger" id="burgerBtn" aria-label="Menu"><span></span><span></span><span></span></button>
+    <button class="theme-toggle" id="themeToggle" aria-label="Переключить режим"><span class="dot"></span></button>
+    <button class="burger" id="burgerBtn" aria-label="Меню"><span></span><span></span><span></span></button>
   </div>
   <div class="menu-panel" id="menuPanel">
-    <button class="menu-item" data-cat="all">Barchasi</button>
-    <button class="menu-item" data-cat="mods">Modlar</button>
-    <button class="menu-item" data-cat="textures">Teksturalar</button>
-    <button class="menu-item" data-cat="shaders">Shayderlar</button>
-    <button class="menu-item" data-cat="maps">Xaritalar</button>
+    <button class="menu-item" data-cat="all">Все</button>
+    <button class="menu-item" data-cat="mods">Моды</button>
+    <button class="menu-item" data-cat="textures">Текстуры</button>
+    <button class="menu-item" data-cat="shaders">Шейдеры</button>
+    <button class="menu-item" data-cat="maps">Карты</button>
   </div>
 </nav>
 
 <section class="hero">
-  <h1>Minecraft modlari, bir joyda</h1>
-  <p>Modlar, teksturalar, shayderlar va xaritalarni ko'ring, yuklab oling va o'z bahoingizni qoldiring.</p>
+  <h1>Моды для Minecraft в одном месте</h1>
+  <p>Смотрите моды, текстуры, шейдеры и карты, скачивайте и оставляйте свою оценку.</p>
   <div class="search">
-    <input type="text" id="searchInput" placeholder="Mod nomini qidiring...">
-    <button id="searchBtn">Qidirish</button>
+    <input type="text" id="searchInput" placeholder="Поиск по названию мода...">
+    <button id="searchBtn">Поиск</button>
   </div>
 </section>
 
 <div class="chips" id="chips">
-  <div class="chip active" data-cat="all">Barchasi</div>
-  <div class="chip" data-cat="mods">Modlar</div>
-  <div class="chip" data-cat="textures">Teksturalar</div>
-  <div class="chip" data-cat="shaders">Shayderlar</div>
-  <div class="chip" data-cat="maps">Xaritalar</div>
+  <div class="chip active" data-cat="all">Все</div>
+  <div class="chip" data-cat="mods">Моды</div>
+  <div class="chip" data-cat="textures">Текстуры</div>
+  <div class="chip" data-cat="shaders">Шейдеры</div>
+  <div class="chip" data-cat="maps">Карты</div>
 </div>
 
 <div class="grid" id="grid"></div>
-<div class="empty" id="emptyState" style="display:none;">Hozircha bu bo'limda hech narsa yo'q.</div>
+<div class="empty" id="emptyState" style="display:none;">Пока здесь ничего нет.</div>
 
-<footer>MineHub — shaxsiy loyiha</footer>
+<footer>MineHub — личный проект</footer>
 
 <div class="overlay" id="overlay">
   <div class="modal">
@@ -300,29 +300,29 @@
       <h2 class="modal-title" id="modalTitle"></h2>
       <p class="modal-desc" id="modalDesc"></p>
       <div class="modal-actions">
-        <a class="btn-primary" id="modalDownload" href="#" target="_blank" rel="noopener">Yuklab olish</a>
+        <a class="btn-primary" id="modalDownload" href="#" target="_blank" rel="noopener">Скачать</a>
       </div>
 
       <div class="rate-block">
-        <div class="rate-label">Bu modni baholang</div>
+        <div class="rate-label">Оцените этот мод</div>
         <div class="rate-stars" id="rateStars"></div>
       </div>
 
-      <div class="section-label">Izohlar</div>
+      <div class="section-label">Комментарии</div>
       <div id="commentsList"></div>
       <div class="comment-form">
-        <input type="text" id="commentName" placeholder="Ismingiz">
-        <textarea id="commentText" rows="3" placeholder="Izoh yozing..."></textarea>
-        <button id="commentSubmit">Izoh qoldirish</button>
+        <input type="text" id="commentName" placeholder="Ваше имя">
+        <textarea id="commentText" rows="3" placeholder="Напишите комментарий..."></textarea>
+        <button id="commentSubmit">Оставить комментарий</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- ==================== FIREBASE ====================
-  1) https://console.firebase.google.com da bepul loyiha yarating
-  2) Firestore Database va Storage'ni yoqing (test rejimida)
-  3) Project settings > Web app dan config'ni oling va pastga qo'ying
+  1) Создайте бесплатный проект на https://console.firebase.google.com
+  2) Включите Firestore Database (в тестовом режиме)
+  3) Возьмите config в Project settings > Web app и вставьте ниже
 ============================================================ -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -344,7 +344,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDb();
 function getDb(){ try { return getFirestore(app); } catch(e){ return null; } }
 
-/* ---------- theme (localStorage bilan, ishlamasa xotirada saqlanadi) ---------- */
+/* ---------- тема (через localStorage, иначе в памяти) ---------- */
 let memoryTheme = "dark";
 function saveTheme(v){ try{ localStorage.setItem("theme", v); }catch(e){ memoryTheme = v; } }
 function loadTheme(){ try{ return localStorage.getItem("theme") || memoryTheme; }catch(e){ return memoryTheme; } }
@@ -377,9 +377,9 @@ let currentCategory = "all";
 let currentSearch = "";
 
 const demoMods = [
-  { id:"demo1", title:"OptiForest Shader", description:"Yorug'lik va soyalarni yaxshilaydigan yengil shayder to'plami. Past quvvatli qurilmalarda ham silliq ishlaydi.", category:"shaders", imageUrl:"", fileUrl:"#", ratingSum:18, ratingCount:4 },
-  { id:"demo2", title:"Wild Biomes Mod", description:"O'yinga 12 ta yangi biome, ular uchun mos o'simlik va mob'larni qo'shadi.", category:"mods", imageUrl:"", fileUrl:"#", ratingSum:23, ratingCount:5 },
-  { id:"demo3", title:"Clear Skies Texture Pack", description:"Toza va minimalist tekstura paketi, 64x64 rezolyutsiyada.", category:"textures", imageUrl:"", fileUrl:"#", ratingSum:12, ratingCount:3 },
+  { id:"demo1", title:"OptiForest Shader", description:"Лёгкий набор шейдеров, улучшающий свет и тени. Работает плавно даже на слабых устройствах.", category:"shaders", imageUrl:"", fileUrl:"#", ratingSum:18, ratingCount:4 },
+  { id:"demo2", title:"Wild Biomes Mod", description:"Добавляет в игру 12 новых биомов с подходящими растениями и мобами.", category:"mods", imageUrl:"", fileUrl:"#", ratingSum:23, ratingCount:5 },
+  { id:"demo3", title:"Clear Skies Texture Pack", description:"Чистый и минималистичный текстур-пак в разрешении 64x64.", category:"textures", imageUrl:"", fileUrl:"#", ratingSum:12, ratingCount:3 },
 ];
 
 async function loadMods(){
@@ -392,7 +392,7 @@ async function loadMods(){
       snap.forEach(d=> allMods.push({ id:d.id, ...d.data() }));
     }
   }catch(e){
-    console.warn("Firebase ulanmadi, demo ma'lumotlar ko'rsatiladi.", e);
+    console.warn("Firebase не подключен, показаны демо-данные.", e);
     allMods = demoMods;
   }
   renderGrid();
@@ -439,7 +439,7 @@ function renderGrid(){
         <div class="card-desc">${escapeHtml(mod.description)}</div>
         <div class="card-footer">
           <div style="display:flex;align-items:center;" class="stars-slot"></div>
-          <div class="dl-btn">Ko'rish</div>
+          <div class="dl-btn">Смотреть</div>
         </div>
       </div>
     `;
@@ -530,24 +530,24 @@ async function submitRating(val){
       await updateDoc(doc(db,"mods",activeMod.id), {
         ratingSum: increment(val), ratingCount: increment(1)
       });
-    }catch(e){ console.warn("Baho saqlanmadi:", e); }
+    }catch(e){ console.warn("Оценка не сохранена:", e); }
   }
   renderGrid();
 }
 
 async function loadComments(modId){
   const list = document.getElementById("commentsList");
-  list.innerHTML = "<div style='color:var(--text-muted);font-size:13px;'>Yuklanmoqda...</div>";
+  list.innerHTML = "<div style='color:var(--text-muted);font-size:13px;'>Загрузка...</div>";
   let comments = [];
   if(db){
     try{
       const q = query(collection(db,"comments"), where("modId","==",modId), orderBy("createdAt","desc"));
       const snap = await getDocs(q);
       snap.forEach(d=> comments.push(d.data()));
-    }catch(e){ console.warn("Izohlar yuklanmadi:", e); }
+    }catch(e){ console.warn("Комментарии не загружены:", e); }
   }
   if(comments.length === 0){
-    list.innerHTML = "<div style='color:var(--text-muted);font-size:14px;'>Hali izoh yo'q. Birinchi bo'lib yozing!</div>";
+    list.innerHTML = "<div style='color:var(--text-muted);font-size:14px;'>Пока нет комментариев. Будьте первым!</div>";
     return;
   }
   list.innerHTML = "";
@@ -566,7 +566,7 @@ document.getElementById("commentSubmit").addEventListener("click", async ()=>{
   if(db && activeMod && !String(activeMod.id).startsWith("demo")){
     try{
       await addDoc(collection(db,"comments"), { modId: activeMod.id, name, text, createdAt: serverTimestamp() });
-    }catch(e){ console.warn("Izoh saqlanmadi:", e); }
+    }catch(e){ console.warn("Комментарий не сохранён:", e); }
   }
   document.getElementById("commentName").value = "";
   document.getElementById("commentText").value = "";
