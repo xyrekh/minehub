@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MineHub — Minecraft modlari</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+    --radius-full: 999px;
+    --accent: #4F8A5B;
+    --accent-hover: #5FA36C;
+    --gold: #D6A94A;
+    --transition: 0.35s cubic-bezier(.4,0,.2,1);
+  }
+  [data-theme="dark"]{
+    --bg: #302F2C;
+    --surface: #3B3A36;
+    --surface-2: #454440;
+    --text: #F2F0E8;
+    --text-muted: #B0ADA4;
+    --border: #4A4944;
+    --star-empty: #55534D;
+    --shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+  [data-theme="light"]{
+    --bg: #EFEDE3;
+    --surface: #FFFFFF;
+    --surface-2: #F7F5EC;
+    --text: #2B2A27;
+    --text-muted: #7A776E;
+    --border: #E2DFD3;
+    --star-empty: #D8D4C6;
+    --shadow: 0 10px 30px rgba(60,56,40,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Manrope',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    transition: background var(--transition), color var(--transition);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none;}
+  img{max-width:100%;display:block;}
+
+  /* ---------- NAV ---------- */
+  .nav{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 24px;
+    background:var(--bg);
+    border-bottom:1px solid var(--border);
+    transition: background var(--transition), border-color var(--transition);
+  }
+  .logo{
+    font-weight:800; font-size:20px; letter-spacing:-0.02em;
+  }
+  .logo span{color:var(--accent);}
+  .nav-actions{display:flex; align-items:center; gap:10px;}
+
+  .theme-toggle{
+    width:52px; height:30px; border-radius:var(--radius-full);
+    background:var(--surface-2); border:1px solid var(--border);
+    position:relative; cursor:pointer; padding:0;
+    transition: background var(--transition);
+  }
+  .theme-toggle .dot{
+    position:absolute; top:3px; left:3px;
+    width:22px; height:22px; border-radius:50%;
+    background:var(--accent);
+    transition: transform var(--transition), background var(--transition);
+  }
+  [data-theme="light"] .theme-toggle .dot{ transform: translateX(22px); }
+
+  .burger{
+    width:44px; height:44px; border-radius:var(--radius-md);
+    background:var(--surface-2); border:1px solid var(--border);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:5px; cursor:pointer;
+    transition: background var(--transition), transform var(--transition);
+  }
+  .burger:hover{ background:var(--surface); transform: translateY(-1px); }
+  .burger span{ width:18px; height:2px; background:var(--text); border-radius:2px; }
+
+  .menu-panel{
+    position:absolute; top:70px; right:24px; z-index:60;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius-lg); box-shadow:var(--shadow);
+    padding:10px; width:220px;
+    display:flex; flex-direction:column; gap:4px;
+    opacity:0; visibility:hidden; transform: translateY(-8px) scale(0.98);
+    transition: opacity var(--transition), transform var(--transition), visibility var(--transition);
+  }
+  .menu-panel.open{ opacity:1; visibility:visible; transform: translateY(0) scale(1); }
+  .menu-panel a, .menu-panel button.menu-item{
+    display:block; width:100%; text-align:left;
+    padding:12px 14px; border-radius:var(--radius-md);
+    font-weight:700; font-size:14px; background:transparent; border:none;
+    color:var(--text); cursor:pointer; font-family:inherit;
+    transition: background var(--transition);
+  }
+  .menu-panel a:hover, .menu-panel button.menu-item:hover{ background:var(--surface-2); }
+
+  /* ---------- HERO ---------- */
+  .hero{ padding:64px 24px 32px; max-width:900px; }
+  .hero h1{
+    font-size:clamp(32px,6vw,48px); font-weight:800; line-height:1.1;
+    letter-spacing:-0.02em; margin:0 0 12px;
+  }
+  .hero p{
+    color:var(--text-muted); font-size:16px; line-height:1.6; margin:0 0 28px; max-width:520px;
+  }
+  .search{
+    display:flex; align-items:center; gap:10px;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius-full); padding:6px 6px 6px 20px;
+    max-width:480px; box-shadow:var(--shadow);
+  }
+  .search input{
+    border:none; background:transparent; outline:none; flex:1;
+    font-family:inherit; font-size:15px; color:var(--text); padding:10px 0;
+  }
+  .search input::placeholder{ color:var(--text-muted); }
+  .search button{
+    background:var(--accent); color:#fff; border:none;
+    border-radius:var(--radius-full); padding:12px 22px;
+    font-weight:700; font-size:14px; cursor:pointer; font-family:inherit;
+    transition: background var(--transition), transform var(--transition);
+  }
+  .search button:hover{ background:var(--accent-hover); transform: translateY(-1px); }
+
+  /* ---------- CATEGORY CHIPS ---------- */
+  .chips{ display:flex; gap:10px; padding:0 24px 32px; overflow-x:auto; scrollbar-width:none; }
+  .chips::-webkit-scrollbar{ display:none; }
+  .chip{
+    flex-shrink:0; padding:10px 20px; border-radius:var(--radius-full);
+    background:var(--surface); border:1px solid var(--border);
+    font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap;
+    transition: background var(--transition), color var(--transition), border-color var(--transition);
+  }
+  .chip.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
+  .chip:hover:not(.active){ background:var(--surface-2); }
+
+  /* ---------- GRID ---------- */
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:20px; padding:0 24px 80px;
+  }
+  .card{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius-lg); overflow:hidden; cursor:pointer;
+    transition: transform var(--transition), box-shadow var(--transition);
+    display:flex; flex-direction:column;
+  }
+  .card:hover{ transform: translateY(-6px); box-shadow:var(--shadow); }
+  .card-img{
+    width:100%; aspect-ratio:16/10; object-fit:cover;
+    background:var(--surface-2);
+  }
+  .card-body{ padding:18px 18px 20px; display:flex; flex-direction:column; gap:10px; flex:1; }
+  .card-title{ font-weight:800; font-size:17px; letter-spacing:-0.01em; }
+  .card-desc{
+    font-size:14px; color:var(--text-muted); line-height:1.5;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .card-footer{ display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:6px; }
+  .stars{ display:flex; gap:2px; }
+  .stars svg{ width:15px; height:15px; }
+  .rating-count{ font-size:12px; color:var(--text-muted); margin-left:6px; }
+  .dl-btn{
+    background:var(--surface-2); border:1px solid var(--border);
+    border-radius:var(--radius-full); padding:8px 16px;
+    font-weight:700; font-size:13px; color:var(--text);
+    transition: background var(--transition);
+  }
+  .dl-btn:hover{ background:var(--accent); color:#fff; border-color:var(--accent); }
+
+  .empty{ padding:60px 24px; text-align:center; color:var(--text-muted); font-weight:500; }
+
+  /* ---------- MODAL ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.5);
+    display:flex; align-items:flex-end; justify-content:center;
+    z-index:100; opacity:0; visibility:hidden; transition: opacity var(--transition), visibility var(--transition);
+  }
+  .overlay.open{ opacity:1; visibility:visible; }
+  @media (min-width:720px){ .overlay{ align-items:center; } }
+  .modal{
+    background:var(--bg); width:100%; max-width:640px; max-height:88vh;
+    border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+    overflow-y:auto; padding:0 0 32px;
+    transform: translateY(24px); transition: transform var(--transition);
+  }
+  @media (min-width:720px){ .modal{ border-radius:var(--radius-lg); transform: scale(0.97); } }
+  .overlay.open .modal{ transform:none; }
+  .modal-img{ width:100%; aspect-ratio:16/9; object-fit:cover; background:var(--surface-2); }
+  .modal-close{
+    position:absolute; top:16px; right:16px;
+    width:38px; height:38px; border-radius:50%;
+    background:var(--surface); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    font-size:18px; font-weight:700; color:var(--text);
+  }
+  .modal-body{ padding:24px 24px 0; }
+  .modal-title{ font-size:26px; font-weight:800; letter-spacing:-0.02em; margin:0 0 6px; }
+  .modal-desc{ color:var(--text-muted); font-size:15px; line-height:1.7; margin:0 0 20px; }
+  .modal-actions{ display:flex; gap:12px; margin-bottom:28px; flex-wrap:wrap; }
+  .btn-primary{
+    background:var(--accent); color:#fff; border:none; border-radius:var(--radius-full);
+    padding:14px 26px; font-weight:700; font-size:15px; cursor:pointer; font-family:inherit;
+    transition: background var(--transition), transform var(--transition);
+  }
+  .btn-primary:hover{ background:var(--accent-hover); transform: translateY(-1px); }
+
+  .rate-block{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+    padding:16px 18px; margin-bottom:28px;
+  }
+  .rate-label{ font-size:13px; color:var(--text-muted); font-weight:700; margin-bottom:8px; }
+  .rate-stars{ display:flex; gap:6px; }
+  .rate-stars svg{ width:26px; height:26px; cursor:pointer; }
+
+  .section-label{ font-weight:800; font-size:15px; margin:0 0 14px; }
+  .comment{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+    padding:14px 16px; margin-bottom:10px;
+  }
+  .comment-name{ font-weight:700; font-size:13px; margin-bottom:4px; }
+  .comment-text{ font-size:14px; color:var(--text-muted); line-height:1.5; }
+  .comment-form{ display:flex; flex-direction:column; gap:10px; margin-top:16px; }
+  .comment-form input, .comment-form textarea{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+    padding:12px 16px; font-family:inherit; font-size:14px; color:var(--text); outline:none; resize:none;
+  }
+  .comment-form button{
+    align-self:flex-start; background:var(--surface-2); border:1px solid var(--border);
+    border-radius:var(--radius-full); padding:10px 20px; font-weight:700; font-size:13px;
+    cursor:pointer; color:var(--text); font-family:inherit; transition: background var(--transition);
+  }
+  .comment-form button:hover{ background:var(--accent); color:#fff; border-color:var(--accent); }
+
+  .fade-in{ opacity:0; transform: translateY(14px); transition: opacity 0.5s, transform 0.5s; }
+  .fade-in.visible{ opacity:1; transform:none; }
+
+  footer{ padding:32px 24px 48px; text-align:center; color:var(--text-muted); font-size:13px; }
+</style>
+</head>
+<body data-theme="dark">
+
+<nav class="nav">
+  <div class="logo">Mine<span>Hub</span></div>
+  <div class="nav-actions">
+    <button class="theme-toggle" id="themeToggle" aria-label="Rejimni almashtirish"><span class="dot"></span></button>
+    <button class="burger" id="burgerBtn" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+  <div class="menu-panel" id="menuPanel">
+    <button class="menu-item" data-cat="all">Barchasi</button>
+    <button class="menu-item" data-cat="mods">Modlar</button>
+    <button class="menu-item" data-cat="textures">Teksturalar</button>
+    <button class="menu-item" data-cat="shaders">Shayderlar</button>
+    <button class="menu-item" data-cat="maps">Xaritalar</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <h1>Minecraft modlari, bir joyda</h1>
+  <p>Modlar, teksturalar, shayderlar va xaritalarni ko'ring, yuklab oling va o'z bahoingizni qoldiring.</p>
+  <div class="search">
+    <input type="text" id="searchInput" placeholder="Mod nomini qidiring...">
+    <button id="searchBtn">Qidirish</button>
+  </div>
+</section>
+
+<div class="chips" id="chips">
+  <div class="chip active" data-cat="all">Barchasi</div>
+  <div class="chip" data-cat="mods">Modlar</div>
+  <div class="chip" data-cat="textures">Teksturalar</div>
+  <div class="chip" data-cat="shaders">Shayderlar</div>
+  <div class="chip" data-cat="maps">Xaritalar</div>
+</div>
+
+<div class="grid" id="grid"></div>
+<div class="empty" id="emptyState" style="display:none;">Hozircha bu bo'limda hech narsa yo'q.</div>
+
+<footer>MineHub — shaxsiy loyiha</footer>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div style="position:relative;">
+      <img class="modal-img" id="modalImg" src="" alt="">
+      <button class="modal-close" id="modalClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <h2 class="modal-title" id="modalTitle"></h2>
+      <p class="modal-desc" id="modalDesc"></p>
+      <div class="modal-actions">
+        <a class="btn-primary" id="modalDownload" href="#" target="_blank" rel="noopener">Yuklab olish</a>
+      </div>
+
+      <div class="rate-block">
+        <div class="rate-label">Bu modni baholang</div>
+        <div class="rate-stars" id="rateStars"></div>
+      </div>
+
+      <div class="section-label">Izohlar</div>
+      <div id="commentsList"></div>
+      <div class="comment-form">
+        <input type="text" id="commentName" placeholder="Ismingiz">
+        <textarea id="commentText" rows="3" placeholder="Izoh yozing..."></textarea>
+        <button id="commentSubmit">Izoh qoldirish</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== FIREBASE ====================
+  1) https://console.firebase.google.com da bepul loyiha yarating
+  2) Firestore Database va Storage'ni yoqing (test rejimida)
+  3) Project settings > Web app dan config'ni oling va pastga qo'ying
+============================================================ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, getDocs, addDoc, doc, updateDoc,
+  increment, query, where, orderBy, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD2spvoZNufw1o64Yy5Iw0oeaTp3WnAwe0",
+  authDomain: "minehub-85c19.firebaseapp.com",
+  projectId: "minehub-85c19",
+  storageBucket: "minehub-85c19.firebasestorage.app",
+  messagingSenderId: "479010150876",
+  appId: "1:479010150876:web:56baae2ecb2e07c106d719"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDb();
+function getDb(){ try { return getFirestore(app); } catch(e){ return null; } }
+
+/* ---------- theme (localStorage bilan, ishlamasa xotirada saqlanadi) ---------- */
+let memoryTheme = "dark";
+function saveTheme(v){ try{ localStorage.setItem("theme", v); }catch(e){ memoryTheme = v; } }
+function loadTheme(){ try{ return localStorage.getItem("theme") || memoryTheme; }catch(e){ return memoryTheme; } }
+
+const body = document.body;
+function applyTheme(t){ body.setAttribute("data-theme", t); saveTheme(t); }
+applyTheme(loadTheme());
+
+document.getElementById("themeToggle").addEventListener("click", ()=>{
+  const cur = body.getAttribute("data-theme");
+  applyTheme(cur === "dark" ? "light" : "dark");
+});
+
+/* ---------- burger menu ---------- */
+const burgerBtn = document.getElementById("burgerBtn");
+const menuPanel = document.getElementById("menuPanel");
+burgerBtn.addEventListener("click", (e)=>{
+  e.stopPropagation();
+  menuPanel.classList.toggle("open");
+});
+document.addEventListener("click", (e)=>{
+  if(!menuPanel.contains(e.target) && e.target !== burgerBtn){
+    menuPanel.classList.remove("open");
+  }
+});
+
+/* ---------- data ---------- */
+let allMods = [];
+let currentCategory = "all";
+let currentSearch = "";
+
+const demoMods = [
+  { id:"demo1", title:"OptiForest Shader", description:"Yorug'lik va soyalarni yaxshilaydigan yengil shayder to'plami. Past quvvatli qurilmalarda ham silliq ishlaydi.", category:"shaders", imageUrl:"", fileUrl:"#", ratingSum:18, ratingCount:4 },
+  { id:"demo2", title:"Wild Biomes Mod", description:"O'yinga 12 ta yangi biome, ular uchun mos o'simlik va mob'larni qo'shadi.", category:"mods", imageUrl:"", fileUrl:"#", ratingSum:23, ratingCount:5 },
+  { id:"demo3", title:"Clear Skies Texture Pack", description:"Toza va minimalist tekstura paketi, 64x64 rezolyutsiyada.", category:"textures", imageUrl:"", fileUrl:"#", ratingSum:12, ratingCount:3 },
+];
+
+async function loadMods(){
+  if(!db){ allMods = demoMods; renderGrid(); return; }
+  try{
+    const snap = await getDocs(collection(db,"mods"));
+    if(snap.empty){ allMods = demoMods; }
+    else{
+      allMods = [];
+      snap.forEach(d=> allMods.push({ id:d.id, ...d.data() }));
+    }
+  }catch(e){
+    console.warn("Firebase ulanmadi, demo ma'lumotlar ko'rsatiladi.", e);
+    allMods = demoMods;
+  }
+  renderGrid();
+}
+
+function starsSVG(fillCount, size=15, interactive=false, onClick=null){
+  const wrap = document.createElement("div");
+  wrap.className = "stars";
+  for(let i=1;i<=5;i++){
+    const filled = i <= fillCount;
+    const s = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    s.setAttribute("viewBox","0 0 24 24");
+    s.style.cursor = interactive ? "pointer" : "default";
+    s.innerHTML = `<path d="M12 2l2.9 6.6 7.1.7-5.4 4.7 1.7 7-6.3-3.8-6.3 3.8 1.7-7-5.4-4.7 7.1-.7z" fill="${filled ? 'var(--gold)' : 'var(--star-empty)'}"/>`;
+    if(interactive){ s.addEventListener("click", ()=> onClick(i)); }
+    wrap.appendChild(s);
+  }
+  return wrap;
+}
+
+function renderGrid(){
+  const grid = document.getElementById("grid");
+  const emptyState = document.getElementById("emptyState");
+  grid.innerHTML = "";
+
+  const filtered = allMods.filter(m=>{
+    const catOk = currentCategory === "all" || m.category === currentCategory;
+    const searchOk = !currentSearch || m.title.toLowerCase().includes(currentSearch.toLowerCase());
+    return catOk && searchOk;
+  });
+
+  if(filtered.length === 0){ emptyState.style.display = "block"; return; }
+  emptyState.style.display = "none";
+
+  filtered.forEach(mod=>{
+    const card = document.createElement("div");
+    card.className = "card fade-in";
+    const avg = mod.ratingCount ? mod.ratingSum / mod.ratingCount : 0;
+
+    card.innerHTML = `
+      <img class="card-img" src="${mod.imageUrl || placeholderImg()}" alt="${escapeHtml(mod.title)}">
+      <div class="card-body">
+        <div class="card-title">${escapeHtml(mod.title)}</div>
+        <div class="card-desc">${escapeHtml(mod.description)}</div>
+        <div class="card-footer">
+          <div style="display:flex;align-items:center;" class="stars-slot"></div>
+          <div class="dl-btn">Ko'rish</div>
+        </div>
+      </div>
+    `;
+    card.querySelector(".stars-slot").appendChild(starsSVG(Math.round(avg)));
+    const countSpan = document.createElement("span");
+    countSpan.className = "rating-count";
+    countSpan.textContent = mod.ratingCount ? `(${mod.ratingCount})` : "";
+    card.querySelector(".card-footer > div").appendChild(countSpan);
+
+    card.addEventListener("click", ()=> openModal(mod));
+    grid.appendChild(card);
+  });
+
+  observeFadeIns();
+}
+
+function placeholderImg(){
+  return "data:image/svg+xml;utf8," + encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250'><rect width='100%' height='100%' fill='#454440'/></svg>`
+  );
+}
+function escapeHtml(s){
+  const d = document.createElement("div"); d.textContent = s || ""; return d.innerHTML;
+}
+
+function observeFadeIns(){
+  const els = document.querySelectorAll(".fade-in:not(.visible)");
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add("visible"); obs.unobserve(en.target); } });
+  }, { threshold:0.1 });
+  els.forEach(el=> obs.observe(el));
+}
+
+/* ---------- filters ---------- */
+document.querySelectorAll(".chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    document.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));
+    chip.classList.add("active");
+    currentCategory = chip.dataset.cat;
+    renderGrid();
+  });
+});
+document.querySelectorAll(".menu-item").forEach(item=>{
+  item.addEventListener("click", ()=>{
+    currentCategory = item.dataset.cat;
+    document.querySelectorAll(".chip").forEach(c=> c.classList.toggle("active", c.dataset.cat === currentCategory));
+    menuPanel.classList.remove("open");
+    renderGrid();
+  });
+});
+document.getElementById("searchBtn").addEventListener("click", runSearch);
+document.getElementById("searchInput").addEventListener("keydown", (e)=>{ if(e.key === "Enter") runSearch(); });
+function runSearch(){
+  currentSearch = document.getElementById("searchInput").value.trim();
+  renderGrid();
+}
+
+/* ---------- modal ---------- */
+const overlay = document.getElementById("overlay");
+let activeMod = null;
+let userRatedThisSession = false;
+
+function openModal(mod){
+  activeMod = mod;
+  userRatedThisSession = false;
+  document.getElementById("modalImg").src = mod.imageUrl || placeholderImg();
+  document.getElementById("modalTitle").textContent = mod.title;
+  document.getElementById("modalDesc").textContent = mod.description;
+  document.getElementById("modalDownload").href = mod.fileUrl || "#";
+
+  const rateStars = document.getElementById("rateStars");
+  rateStars.innerHTML = "";
+  rateStars.appendChild(starsSVG(0, 26, true, (val)=> submitRating(val)));
+
+  loadComments(mod.id);
+  overlay.classList.add("open");
+}
+document.getElementById("modalClose").addEventListener("click", ()=> overlay.classList.remove("open"));
+overlay.addEventListener("click", (e)=>{ if(e.target === overlay) overlay.classList.remove("open"); });
+
+async function submitRating(val){
+  if(userRatedThisSession) return;
+  userRatedThisSession = true;
+  activeMod.ratingSum = (activeMod.ratingSum||0) + val;
+  activeMod.ratingCount = (activeMod.ratingCount||0) + 1;
+  if(db && !String(activeMod.id).startsWith("demo")){
+    try{
+      await updateDoc(doc(db,"mods",activeMod.id), {
+        ratingSum: increment(val), ratingCount: increment(1)
+      });
+    }catch(e){ console.warn("Baho saqlanmadi:", e); }
+  }
+  renderGrid();
+}
+
+async function loadComments(modId){
+  const list = document.getElementById("commentsList");
+  list.innerHTML = "<div style='color:var(--text-muted);font-size:13px;'>Yuklanmoqda...</div>";
+  let comments = [];
+  if(db){
+    try{
+      const q = query(collection(db,"comments"), where("modId","==",modId), orderBy("createdAt","desc"));
+      const snap = await getDocs(q);
+      snap.forEach(d=> comments.push(d.data()));
+    }catch(e){ console.warn("Izohlar yuklanmadi:", e); }
+  }
+  if(comments.length === 0){
+    list.innerHTML = "<div style='color:var(--text-muted);font-size:14px;'>Hali izoh yo'q. Birinchi bo'lib yozing!</div>";
+    return;
+  }
+  list.innerHTML = "";
+  comments.forEach(c=>{
+    const el = document.createElement("div");
+    el.className = "comment";
+    el.innerHTML = `<div class="comment-name">${escapeHtml(c.name)}</div><div class="comment-text">${escapeHtml(c.text)}</div>`;
+    list.appendChild(el);
+  });
+}
+
+document.getElementById("commentSubmit").addEventListener("click", async ()=>{
+  const name = document.getElementById("commentName").value.trim();
+  const text = document.getElementById("commentText").value.trim();
+  if(!name || !text) return;
+  if(db && activeMod && !String(activeMod.id).startsWith("demo")){
+    try{
+      await addDoc(collection(db,"comments"), { modId: activeMod.id, name, text, createdAt: serverTimestamp() });
+    }catch(e){ console.warn("Izoh saqlanmadi:", e); }
+  }
+  document.getElementById("commentName").value = "";
+  document.getElementById("commentText").value = "";
+  loadComments(activeMod.id);
+});
+
+loadMods();
+</script>
+</body>
+</html>
